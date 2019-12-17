@@ -25,3 +25,6 @@ that shows all the JMX sources that were found.
 Replace the simple metrics4j.conf file with the one from the dump and then follow
 the Metrics4j documentation to add a trigger, formatter and sink so it can 
 send off your JMX metrics.  https://github.com/kairosdb/metrics4j
+
+Note: Because all of the JMX metrics are created as custom sources in metrics4j
+you don't need to define a collector in your metrics4j.conf file.
