@@ -8,6 +8,14 @@
 	<artifactId>JMXReporter</artifactId>
 	<version>0.6.0</version>
 
+	<repositories>
+		<repository>
+			<id>kairos_staging</id>
+			<name>Snapshot repo for Kairos</name>
+			<url>https://oss.sonatype.org/content/repositories/orgkairosdb-1025</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.kairosdb</groupId>
