@@ -28,3 +28,6 @@ send off your JMX metrics.  https://github.com/kairosdb/metrics4j
 
 Note: Because all of the JMX metrics are created as custom sources in metrics4j
 you don't need to define a collector in your metrics4j.conf file.
+
+Checkout the wiki page for samples as I test this with various applications:
+https://github.com/kairosdb/JMXReporter/wiki
