@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.DoubleSupplier;
-import java.util.function.LongSupplier;
 
 public class JMXReporter implements NotificationListener
 {
@@ -36,7 +34,7 @@ public class JMXReporter implements NotificationListener
 
 		try
 		{
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 		}
 		catch (InterruptedException e)
 		{
@@ -51,16 +49,13 @@ public class JMXReporter implements NotificationListener
 		JMXReporter reporter = new JMXReporter(server);
 
 		//Register all current MBeans
-		for (ObjectInstance queryMBean : server.queryMBeans(null, null))
-		{
-			reporter.registerMBean(queryMBean.getObjectName());
-		}
+		reporter.loadExistingMBeans();
 
 
 		//Add notification for future MBeans
 		try
 		{
-			server.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, reporter, null, null);
+			reporter.addMBeanNotification();
 		}
 		catch (InstanceNotFoundException e)
 		{
@@ -68,9 +63,27 @@ public class JMXReporter implements NotificationListener
 		}
 	}
 
+	public void close() throws ListenerNotFoundException, InstanceNotFoundException
+	{
+		m_server.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this);
+	}
+
 	public JMXReporter(MBeanServer server)
 	{
 		m_server = server;
+	}
+
+	/*package*/ void loadExistingMBeans()
+	{
+		for (ObjectInstance queryMBean : m_server.queryMBeans(null, null))
+		{
+			registerMBean(queryMBean.getObjectName());
+		}
+	}
+
+	/*package*/ void addMBeanNotification() throws InstanceNotFoundException
+	{
+		m_server.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, this, null, null);
 	}
 
 	private void registerMBean(ObjectName beanName)
@@ -100,7 +113,13 @@ public class JMXReporter implements NotificationListener
 								tags, null, new LongAttributeSource(beanName, attribute.getName()));
 						sourceKeys.add(new SourceKey(className, methodName, tags));
 					}
-					else if (type.equals("double") || type.equals("float"))
+					else if (type.equals("float"))
+					{
+						MetricSourceManager.addSource(className, methodName,
+								tags, null, new FloatAttributeSource(beanName, attribute.getName()));
+						sourceKeys.add(new SourceKey(className, methodName, tags));
+					}
+					else if (type.equals("double"))
 					{
 						MetricSourceManager.addSource(className, methodName,
 								tags, null, new DoubleAttributeSource(beanName, attribute.getName()));
@@ -241,6 +260,32 @@ public class JMXReporter implements NotificationListener
 		}
 	}
 
+	private class FloatAttributeSource extends AttributeSource
+	{
+
+		private FloatAttributeSource(ObjectName objectName, String attribute)
+		{
+			super(objectName, attribute);
+		}
+
+		@Override
+		public MetricValue getValue()
+		{
+			float value = 0;
+
+			try
+			{
+				value = (float)m_server.getAttribute(m_objectName, m_attribute);
+			}
+			catch (Exception e)
+			{
+				logger.debug("Failed to read JMX attribute "+m_objectName+": "+m_attribute, e);
+			}
+
+			return new DoubleValue(value);
+		}
+	}
+
 	private class DoubleAttributeSource extends AttributeSource
 	{
 
@@ -307,7 +352,7 @@ public class JMXReporter implements NotificationListener
 						}
 						else if (openType == SimpleType.DOUBLE)
 						{
-							metricReporter.put(key, new DoubleValue((float) data.get(key)));
+							metricReporter.put(key, new DoubleValue((double) data.get(key)));
 						}
 					}
 				}
