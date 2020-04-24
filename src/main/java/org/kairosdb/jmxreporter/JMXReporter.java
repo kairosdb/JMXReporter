@@ -188,6 +188,30 @@ public class JMXReporter implements NotificationListener
 		logger.debug("Received MBean Server notification: {}: {}", what, beanName);
 	}
 
+	private static void reportValue(MetricReporter reporter, String key, Long value)
+	{
+		if (value != null)
+			reporter.put(key, new LongValue(value));
+	}
+
+	private static void reportValue(MetricReporter reporter, String key, Integer value)
+	{
+		if (value != null)
+			reporter.put(key, new LongValue(value));
+	}
+
+	private static void reportValue(MetricReporter reporter, String key, Float value)
+	{
+		if (value != null && !value.isInfinite() && !value.isNaN())
+			reporter.put(key, new DoubleValue(value));
+	}
+
+	private static void reportValue(MetricReporter reporter, String key, Double value)
+	{
+		if (value != null && !value.isInfinite() && !value.isNaN())
+			reporter.put(key, new DoubleValue(value));
+	}
+
 	private abstract class AttributeSource implements MetricCollector
 	{
 		protected final ObjectName m_objectName;
@@ -197,14 +221,6 @@ public class JMXReporter implements NotificationListener
 		{
 			m_objectName = objectName;
 			m_attribute = attribute;
-		}
-
-		protected abstract MetricValue getValue();
-
-		@Override
-		public void reportMetric(MetricReporter metricReporter)
-		{
-			metricReporter.put("value", getValue());
 		}
 	}
 
@@ -217,20 +233,20 @@ public class JMXReporter implements NotificationListener
 		}
 
 		@Override
-		public MetricValue getValue()
+		public void reportMetric(MetricReporter metricReporter)
 		{
-			long value = 0;
+			Integer value = null;
 
 			try
 			{
-				value = (int)m_server.getAttribute(m_objectName, m_attribute);
+				value = (Integer)m_server.getAttribute(m_objectName, m_attribute);
 			}
 			catch (Exception e)
 			{
 				logger.debug("Failed to read JMX attribute "+m_objectName+": "+m_attribute, e);
 			}
 
-			return new LongValue(value);
+			reportValue(metricReporter, "value", value);
 		}
 
 	}
@@ -243,20 +259,20 @@ public class JMXReporter implements NotificationListener
 		}
 
 		@Override
-		public MetricValue getValue()
+		public void reportMetric(MetricReporter metricReporter)
 		{
-			long value = 0;
+			Long value = null;
 
 			try
 			{
-				value = (long)m_server.getAttribute(m_objectName, m_attribute);
+				value = (Long)m_server.getAttribute(m_objectName, m_attribute);
 			}
 			catch (Exception e)
 			{
 				logger.debug("Failed to read JMX attribute "+m_objectName+": "+m_attribute, e);
 			}
 
-			return new LongValue(value);
+			reportValue(metricReporter, "value", value);
 		}
 	}
 
@@ -269,20 +285,20 @@ public class JMXReporter implements NotificationListener
 		}
 
 		@Override
-		public MetricValue getValue()
+		public void reportMetric(MetricReporter metricReporter)
 		{
-			float value = 0;
+			Float value = null;
 
 			try
 			{
-				value = (float)m_server.getAttribute(m_objectName, m_attribute);
+				value = (Float)m_server.getAttribute(m_objectName, m_attribute);
 			}
 			catch (Exception e)
 			{
 				logger.debug("Failed to read JMX attribute "+m_objectName+": "+m_attribute, e);
 			}
 
-			return new DoubleValue(value);
+			reportValue(metricReporter, "value", value);
 		}
 	}
 
@@ -295,20 +311,20 @@ public class JMXReporter implements NotificationListener
 		}
 
 		@Override
-		public MetricValue getValue()
+		public void reportMetric(MetricReporter metricReporter)
 		{
-			double value = 0.0;
+			Double value = null;
 
 			try
 			{
-				value = (double)m_server.getAttribute(m_objectName, m_attribute);
+				value = (Double)m_server.getAttribute(m_objectName, m_attribute);
 			}
 			catch (Exception e)
 			{
 				logger.debug("Failed to read JMX attribute "+m_objectName+": "+m_attribute, e);
 			}
 
-			return new DoubleValue(value);
+			reportValue(metricReporter, "value", value);
 		}
 	}
 
@@ -317,12 +333,6 @@ public class JMXReporter implements NotificationListener
 		private CompositeAttributeSource(ObjectName objectName, String attribute)
 		{
 			super(objectName, attribute);
-		}
-
-		@Override
-		protected MetricValue getValue()
-		{
-			return null;
 		}
 
 		@Override
@@ -340,19 +350,19 @@ public class JMXReporter implements NotificationListener
 						OpenType<?> openType = type.getType(key);
 						if (openType == SimpleType.LONG)
 						{
-							metricReporter.put(key, new LongValue((long) data.get(key)));
+							reportValue(metricReporter, key, (Long)data.get(key));
 						}
 						else if (openType == SimpleType.INTEGER)
 						{
-							metricReporter.put(key, new LongValue((int) data.get(key)));
+							reportValue(metricReporter, key, (Integer) data.get(key));
 						}
 						else if (openType == SimpleType.FLOAT)
 						{
-							metricReporter.put(key, new DoubleValue((float) data.get(key)));
+							reportValue(metricReporter, key, (Float)data.get(key));
 						}
 						else if (openType == SimpleType.DOUBLE)
 						{
-							metricReporter.put(key, new DoubleValue((double) data.get(key)));
+							reportValue(metricReporter, key, (Double)data.get(key));
 						}
 					}
 				}
