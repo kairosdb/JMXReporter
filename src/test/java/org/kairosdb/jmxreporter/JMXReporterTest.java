@@ -106,7 +106,6 @@ class JMXReporterTest
 		Instant now = Instant.now();
 		m_testTrigger.triggerCollection(now);
 
-		verify(m_sink).init(any());
 		ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
 		verify(m_sink).reportMetrics(captor.capture());
 		verifyNoMoreInteractions(m_sink);
@@ -163,7 +162,6 @@ class JMXReporterTest
 		Instant now = Instant.now();
 		m_testTrigger.triggerCollection(now);
 
-		verify(m_sink).init(any());
 		ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
 		verify(m_sink).reportMetrics(captor.capture());
 		verifyNoMoreInteractions(m_sink);
