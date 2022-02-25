@@ -12,7 +12,7 @@ so they can be reported.
 1. Download the JMXReporter jar file.
 1. For your JMX application (say Kafka) add JMXReporter to the java command line
 as a javaagent (-javaagent:path_to_jxmreporter_jar)
-1. Place the following simple metrics4j.conf file in the applications classpath.
+1. Place the following simple metrics4j.conf file in the applications classpath.  Or specify the location with -DMETRICS4J_CONFIG=/path/to/metrics4j.conf
 ```hocon
 metrics4j: {
 	_dump-file: "dump.conf"
