@@ -20,7 +20,9 @@ metrics4j: {
 ```
 
 Run your application and when it shuts down Metrics4j will create the file dump.conf
-that shows all the JMX sources that were found.
+that shows all the JMX sources that were found.  With some applications shutdown
+may happen too quickly and the dump file may not be created.  The dump file is also
+written out after the application has ran for 1 minute.
 
 Replace the simple metrics4j.conf file with the one from the dump and then follow
 the Metrics4j documentation to add a trigger, formatter and sink so it can 
