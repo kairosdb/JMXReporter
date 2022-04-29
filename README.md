@@ -15,7 +15,18 @@ as a javaagent (-javaagent:path_to_jxmreporter_jar)
 1. Place the following simple metrics4j.conf file in the applications classpath.  Or specify the location with -DMETRICS4J_CONFIG=/path/to/metrics4j.conf
 ```hocon
 metrics4j: {
-	_dump-file: "dump.conf"
+    _dump-file: "dump.conf"
+    plugins: {
+        jmx: {
+            _class: "org.kairosdb.metrics4j.plugins.JMXReporter"
+            type-map: {
+                #If some message beans are not showing up you may need to map them to a native type
+                #java.lang.Object: "long"
+            }
+        #Identifies what attributes to put in the class name in the config file.
+        class-name-attributes: ["type", "name"]
+        }
+    }
 }
 ```
 
